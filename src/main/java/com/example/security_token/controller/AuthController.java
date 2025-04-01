@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Swagger UI:
+ * <a href="http://localhost:8080/swagger-ui/index.html">...</a>
+ */
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
