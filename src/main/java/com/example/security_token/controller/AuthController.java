@@ -10,9 +10,6 @@ import com.example.security_token.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -49,42 +46,36 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest authRequest) {
-        try {
-            // Autenticar al usuario
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequest.getUsername(),
-                            authRequest.getPassword()
-                    )
-            );
 
-            // Establecer la autenticación en el contexto de seguridad
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Autenticar al usuario
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequest.getUsername(),
+                        authRequest.getPassword()
+                )
+        );
 
-            // Obtener detalles del usuario autenticado
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        // Establecer la autenticación en el contexto de seguridad
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Generar token JWT
-            String jwt = jwtTokenProvider.generateToken(authentication);
+        // Obtener detalles del usuario autenticado
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            // Obtener roles del usuario
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
+        // Generar token JWT
+        String jwt = jwtTokenProvider.generateToken(authentication);
 
-            // Devolver la respuesta con el token
-            return ResponseEntity.ok(new JwtResponse(
-                    jwt,
-                    userDetails.getUsername(),
-                    roles
-            ));
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Credenciales inválidas");
-        } catch (DisabledException e) {
-            return ResponseEntity.status(403).body("Cuenta deshabilitada");
-        } catch (LockedException e) {
-            return ResponseEntity.status(403).body("Cuenta bloqueada");
-        }
+        // Obtener roles del usuario
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        // Devolver la respuesta con el token
+        return ResponseEntity.ok(new JwtResponse(
+                jwt,
+                userDetails.getUsername(),
+                roles
+        ));
+        
     }
 
 
@@ -101,7 +92,7 @@ public class AuthController {
         }
 
         // Crear y guardar el nuevo usuario
-        UserEntity newUser = new UserEntity( );
+        UserEntity newUser = new UserEntity();
         newUser.setUsername(userRegisterRequest.getUsername());
         newUser.setEmail(userRegisterRequest.getEmail());
         newUser.setPassword(userRegisterRequest.getPassword());

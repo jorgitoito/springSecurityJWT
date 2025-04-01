@@ -89,12 +89,11 @@ public class JwtTokenProvider {
         if (!StringUtils.hasText(token)) {
             throw new IllegalArgumentException("Token cannot be empty");
         }
-
-        String cleanToken = token.trim();
+        
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
-                .parseClaimsJws(cleanToken);
+                .parseClaimsJws(token.trim());
     }
 
     // Método adicional para obtener claims
