@@ -1,6 +1,8 @@
 package com.example.security_token.controller;
 
 import com.example.security_token.controller.dto.ProductRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -9,12 +11,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/products")
 public class ProductController {
 
+    @Operation(summary = "get All Products", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping
     @PreAuthorize("hasAuthority('PRODUCT_READ') or hasRole('ADMIN')")
     public ResponseEntity<String> getAllProducts() {
         return ResponseEntity.ok("Lista de productos (requiere PRODUCT_READ o ROLE_ADMIN)");
     }
 
+    @Operation(summary = "Create Product", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     @PreAuthorize("hasAuthority('PRODUCT_WRITE') or hasRole('ADMIN')")
     public ResponseEntity<String> createProduct(@RequestBody ProductRequest productRequest) {
