@@ -6,8 +6,10 @@ import com.example.security_token.controller.dto.UserRegisterRequest;
 import com.example.security_token.controller.dto.UserResponse;
 import com.example.security_token.persistency.UserEntity;
 import com.example.security_token.service.JwtTokenProvider;
+import com.example.security_token.service.LoginAttemptService;
 import com.example.security_token.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,19 +36,27 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;  // Instancia de LoginAttemptService
 
     public AuthController(AuthenticationManager authenticationManager,
-                          JwtTokenProvider jwtTokenProvider, UserService userService) {
+                          JwtTokenProvider jwtTokenProvider, UserService userService, LoginAttemptService loginAttemptService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.userService = userService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest authRequest) {
 
+        // Verificar si el usuario está bloqueado
+        if (loginAttemptService.isBlocked(authRequest.getUsername())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Too many failed login attempts. Please try again later.");
+        }
+
+        try {
         // Autenticar al usuario
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -75,6 +85,12 @@ public class AuthController {
                 userDetails.getUsername(),
                 roles
         ));
+        
+        } catch (Exception e) {
+            // Si la autenticación falla, incrementar los intentos fallidos
+            loginAttemptService.loginFailed(authRequest.getUsername());
+            throw  e;
+        }
         
     }
 
