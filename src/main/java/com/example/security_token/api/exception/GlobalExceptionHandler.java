@@ -125,6 +125,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(TooManyFailedLoginAttemptsException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ResponseEntity<ErrorResponse> handleTooManyFailedLoginAttemptsException(
+            TooManyFailedLoginAttemptsException ex, WebRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                "Acceso denegado",
+                ex.getLocalizedMessage(),
+                request.getDescription(false)
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("X-Rate-Limit-Retry-After-Seconds", "15000")
+                .body(errorResponse);
+    }
+    
 
     // Manejo de excepciones de entidad no encontrada
     @ExceptionHandler(EntityNotFoundException.class)

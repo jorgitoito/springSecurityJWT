@@ -83,6 +83,8 @@ public class AuthController {
 
             // Devolver la respuesta con el token JWT y los roles del usuario
             JwtResponse response = new JwtResponse(jwt, userDetails.getUsername(), roles);
+            // Limpiar el registro de intentos después de un login exitoso
+            loginAttemptService.loginSucceeded(authRequest.getUsername());
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException ex) {
