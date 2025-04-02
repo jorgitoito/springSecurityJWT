@@ -1,8 +1,15 @@
 package com.example.security_token.config;
 
+import com.example.security_token.exception.ErrorResponse;
 import com.example.security_token.persistency.filter.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,10 +17,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Configuration
 @EnableWebSecurity
@@ -37,10 +48,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.sendError(403, "Acceso denegado: No tienes los permisos necesarios");
-                        })
+                // Errores que vienen del filtro. No pasan por ExceptionHandler
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(SecurityConfig::extractedError)
                 );
 
         return http.build();
@@ -60,4 +70,45 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+    private static void extractedError(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+        // Si la causa raíz es ExpiredJwtException
+        Throwable cause = authException.getCause();
+        while (cause != null) {
+            if (cause instanceof ExpiredJwtException) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.UNAUTHORIZED.value(),
+                        "Token expirado",
+                        "El token JWT ha expirado",
+                        request.getRequestURI()
+                );
+
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.setContentType("application/json");
+                new ObjectMapper()
+                        .registerModule(new JavaTimeModule())
+                        .writeValue(response.getWriter(), errorResponse);
+                return;
+            }
+            cause = cause.getCause();
+        }
+
+        // Fallback para otros errores de autenticación
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Error de autenticación",
+                authException.getMessage(),
+                request.getRequestURI()
+        );
+
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json");
+        new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .writeValue(response.getWriter(), errorResponse);
+    }
+
+
 }
