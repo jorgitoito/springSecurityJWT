@@ -7,7 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Servicio que provee seguridad. 
- * Limitar la cantidad de solicitudes erroneas. X numero de llamadas en un tiempo. 
+ * Limitar la cantidad de solicitudes erroneas. X numero de llamadas en un tiempo.
+ * En vez de esta solucion Custom se podria usar:  Bucket4j o Resilience4j
  */
 @Service
 public class LoginAttemptService {
