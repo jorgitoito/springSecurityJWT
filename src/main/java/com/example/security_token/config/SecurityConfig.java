@@ -1,7 +1,7 @@
 package com.example.security_token.config;
 
 import com.example.security_token.exception.ErrorResponse;
-import com.example.security_token.persistency.filter.JwtAuthenticationFilter;
+import com.example.security_token.filter.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.ExpiredJwtException;

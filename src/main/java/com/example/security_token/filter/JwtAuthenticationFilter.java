@@ -1,4 +1,4 @@
-package com.example.security_token.persistency.filter;
+package com.example.security_token.filter;
 
 import com.example.security_token.service.JwtTokenProvider;
 import com.example.security_token.service.UserService;
