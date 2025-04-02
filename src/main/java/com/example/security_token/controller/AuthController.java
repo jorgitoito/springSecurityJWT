@@ -4,14 +4,16 @@ import com.example.security_token.controller.dto.AuthRequest;
 import com.example.security_token.controller.dto.JwtResponse;
 import com.example.security_token.controller.dto.UserRegisterRequest;
 import com.example.security_token.controller.dto.UserResponse;
+import com.example.security_token.exception.InvalidCredentialsException;
+import com.example.security_token.exception.TooManyFailedLoginAttemptsException;
 import com.example.security_token.persistency.UserEntity;
 import com.example.security_token.service.JwtTokenProvider;
 import com.example.security_token.service.LoginAttemptService;
 import com.example.security_token.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -50,48 +52,46 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest authRequest) {
 
-        // Verificar si el usuario está bloqueado
+        // Verificar si el usuario está bloqueado debido a demasiados intentos fallidos
         if (loginAttemptService.isBlocked(authRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Too many failed login attempts. Please try again later.");
+            // Lanzar una excepción personalizada que se maneja en un manejador global
+            throw new TooManyFailedLoginAttemptsException("Too many failed login attempts. Please try again later.");
         }
 
         try {
-        // Autenticar al usuario
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authRequest.getUsername(),
-                        authRequest.getPassword()
-                )
-        );
+            // Autenticar al usuario con Spring Security
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authRequest.getUsername(),
+                            authRequest.getPassword()
+                    )
+            );
 
-        // Establecer la autenticación en el contexto de seguridad
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Establecer la autenticación en el contexto de seguridad de Spring Security
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Obtener detalles del usuario autenticado
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // Obtener los detalles del usuario autenticado
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        // Generar token JWT
-        String jwt = jwtTokenProvider.generateToken(authentication);
+            // Generar el token JWT para el usuario autenticado
+            String jwt = jwtTokenProvider.generateToken(authentication);
 
-        // Obtener roles del usuario
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+            // Obtener los roles del usuario
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
 
-        // Devolver la respuesta con el token
-        return ResponseEntity.ok(new JwtResponse(
-                jwt,
-                userDetails.getUsername(),
-                roles
-        ));
-        
-        } catch (Exception e) {
-            // Si la autenticación falla, incrementar los intentos fallidos
+            // Devolver la respuesta con el token JWT y los roles del usuario
+            JwtResponse response = new JwtResponse(jwt, userDetails.getUsername(), roles);
+            return ResponseEntity.ok(response);
+
+        } catch (BadCredentialsException ex) {
+            // En caso de que las credenciales sean incorrectas, incrementar los intentos fallidos
             loginAttemptService.loginFailed(authRequest.getUsername());
-            throw  e;
+
+            // Lanzar una excepción para que sea manejada por el manejador de excepciones global
+            throw new InvalidCredentialsException("Invalid username or password.");
         }
-        
     }
 
 
