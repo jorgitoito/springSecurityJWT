@@ -76,6 +76,25 @@ public class RoleService {
         return repository.findAll(pageable);
     }
     
+    @Transactional
+    public Role updateRolePermissions(String  roleName, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
+        Role role = repository.findByName(roleName)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found with name: " + roleName));
+
+        // Añadir nuevos permisos
+        if (permissionsToAdd != null && !permissionsToAdd.isEmpty()) {
+            Set<Permission> addPermissions = permissionService.findPermissionsByNameIn(permissionsToAdd);
+            role.getPermissions().addAll(addPermissions);
+        }
+
+        // Eliminar permisos
+        if (permissionsToRemove != null && !permissionsToRemove.isEmpty()) {
+            role.getPermissions().removeIf(p -> permissionsToRemove.contains(p.getName()));
+        }
+
+        return repository.save(role);
+    }
+    
     // ----------------------  PRIVATE  -------------------------------
 
     private Set<Permission> processPermissions(Set<PermissionResponse> permissionResponses) {

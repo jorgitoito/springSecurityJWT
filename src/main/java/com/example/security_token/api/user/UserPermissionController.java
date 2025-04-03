@@ -1,8 +1,10 @@
 package com.example.security_token.api.user;
 
+import com.example.security_token.api.exception.ErrorResponse;
 import com.example.security_token.api.user.dto.PermissionResponse;
 import com.example.security_token.api.user.dto.RoleRequest;
 import com.example.security_token.api.user.dto.RoleResponse;
+import com.example.security_token.api.user.dto.UpdateRolePermissionsRequest;
 import com.example.security_token.api.user.dto.UserPermissionResponse;
 import com.example.security_token.domain.model.Permission;
 import com.example.security_token.domain.model.Role;
@@ -12,6 +14,9 @@ import com.example.security_token.domain.service.RoleService;
 import com.example.security_token.domain.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -103,7 +109,7 @@ public class UserPermissionController {
     @Operation(summary = "Create Role", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/roles")
     @PreAuthorize("hasAuthority('ROLES_WRITE') or hasRole('ADMIN')")
-    public ResponseEntity<Void> createPermission(@Valid @RequestBody RoleRequest role) {
+    public ResponseEntity<Void> createRole(@Valid @RequestBody RoleRequest role) {
         roleService.createRole(role);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -141,6 +147,57 @@ public class UserPermissionController {
         Page<RoleResponse> responsePage = rolesPage.map(this::toRolesResponse);
 
         return ResponseEntity.ok(responsePage);
+    }
+
+    @Operation(summary = "Update Role Permissions",
+            description = "Add or remove permissions from a role by role name",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Role updated successfully",
+                            content = @Content(schema = @Schema(implementation = RoleResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Role or permission not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden access",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))                    
+            })
+    @PutMapping("/roles/{roleName}/permissions")
+    @PreAuthorize("hasAuthority('ROLES_WRITE') or hasRole('ADMIN')")
+    public ResponseEntity<RoleResponse> updateRolePermissions(
+            @Parameter(description = "Name of the role to update", required = true)
+            @PathVariable String roleName,
+
+            @Parameter(description = "Permissions to add and remove")
+            @Valid @RequestBody UpdateRolePermissionsRequest request) {
+
+        this.validateRequestRolesToUpdate(request);
+
+        Role updatedRole = roleService.updateRolePermissions(
+                roleName,
+                request.getPermissionsToAdd() != null ? request.getPermissionsToAdd() : Set.of(),
+                request.getPermissionsToRemove() != null ? request.getPermissionsToRemove() : Set.of()
+        );
+
+        return ResponseEntity.ok(toRolesResponse(updatedRole));
+    }
+
+    private void validateRequestRolesToUpdate(UpdateRolePermissionsRequest request) {
+        // Validación básica del request
+        if (request == null) {
+            throw new IllegalArgumentException("Request body cannot be null");
+        }
+
+        // Validar que al menos una operación fue solicitada
+        if ((request.getPermissionsToAdd() == null || request.getPermissionsToAdd().isEmpty()) &&
+                (request.getPermissionsToRemove() == null || request.getPermissionsToRemove().isEmpty())) {
+            throw new IllegalArgumentException("Must specify permissions to add or remove");
+        }
+
+        // Validar nombres de permisos
+        validatePermissionNames(request);
     }
 
     private RoleResponse toRolesResponse(Role role) {
@@ -192,6 +249,24 @@ public class UserPermissionController {
         PermissionResponse permissionResponse = new PermissionResponse();
         permissionResponse.setName(permission.getName());
         return permissionResponse;
+    }
+
+    private void validatePermissionNames(UpdateRolePermissionsRequest request) {
+        if (request.getPermissionsToAdd() != null) {
+            request.getPermissionsToAdd().forEach(name -> {
+                if (name == null || name.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Permission name cannot be null or empty");
+                }
+            });
+        }
+
+        if (request.getPermissionsToRemove() != null) {
+            request.getPermissionsToRemove().forEach(name -> {
+                if (name == null || name.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Permission name cannot be null or empty");
+                }
+            });
+        }
     }
     
     

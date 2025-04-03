@@ -3,6 +3,7 @@ package com.example.security_token.domain.service;
 import com.example.security_token.api.user.exception.PermissionException;
 import com.example.security_token.domain.model.Permission;
 import com.example.security_token.domain.repository.PermissionRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,4 +55,31 @@ public class PermissionService {
     public Page<Permission> getAllPermissions(Pageable pageable) {
         return repository.findAll(pageable);
     }
+
+    // Método para buscar permisos por nombres
+    @Transactional(readOnly = true)
+    public Set<Permission> findPermissionsByNameIn(Set<String> permissionNames) {
+        if (permissionNames == null || permissionNames.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<Permission> foundPermissions = repository.findByNameIn(permissionNames);
+
+        // Verificar que todos los permisos solicitados existen
+        if (foundPermissions.size() != permissionNames.size()) {
+            Set<String> foundNames = foundPermissions.stream()
+                    .map(Permission::getName)
+                    .collect(Collectors.toSet());
+
+            Set<String> missing = permissionNames.stream()
+                    .filter(name -> !foundNames.contains(name))
+                    .collect(Collectors.toSet());
+
+            throw new EntityNotFoundException("Permissions not found: " + missing);
+        }
+
+        return foundPermissions;
+    }
+    
+
 }
