@@ -30,6 +30,13 @@ public class UserService implements UserDetailsService {
                 user.getPassword(),
                 user.getAuthorities());
     }
+    
+    public UserEntity getUserByEmail(String email){
+        
+        return  userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email "+email));
+        
+    }
 
     public UserEntity registerUser(UserEntity user) {
         // Encriptar contraseña antes de guardar
