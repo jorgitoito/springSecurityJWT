@@ -5,15 +5,10 @@ import lombok.Data;
 
 import java.util.Set;
 
-@Data
+@Data // Lombok
 @JsonInclude(JsonInclude.Include.NON_NULL)  // Ignore Null Fields
-public class UserPermissionResponse {
-
-    private String username;
-
-    private String email;
-            
-    private Set<String> permissions;
-    
-    private Set<String> roles;
+public class RoleResponse {
+    private Long id;
+    private String name;
+    private Set<PermissionResponse> permissions;
 }
