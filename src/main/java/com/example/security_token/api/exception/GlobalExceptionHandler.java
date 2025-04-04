@@ -144,7 +144,7 @@ public class GlobalExceptionHandler {
                 .header("X-Rate-Limit-Retry-After-Seconds", "15000")
                 .body(errorResponse);
     }
-    
+
 
     // Manejo de excepciones de entidad no encontrada
     @ExceptionHandler(EntityNotFoundException.class)
@@ -212,5 +212,5 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    
+
 }

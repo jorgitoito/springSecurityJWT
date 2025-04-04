@@ -58,7 +58,7 @@ public class UserPermissionMapper {
         return user;
     }
 
-    public static PermissionResponse toPermissionResponse(Permission permission){
+    public static PermissionResponse toPermissionResponse(Permission permission) {
         if (permission == null) {
             return null;
         }

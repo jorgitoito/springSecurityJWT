@@ -3,7 +3,6 @@ package com.example.security_token.domain.service;
 import com.example.security_token.domain.model.Role;
 import com.example.security_token.domain.model.UserEntity;
 import com.example.security_token.domain.repository.UserRepository;
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,7 +22,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     private final RoleService roleService;
-    
+
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleService roleService) {
         this.userRepository = userRepository;

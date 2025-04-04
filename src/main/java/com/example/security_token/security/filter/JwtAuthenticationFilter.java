@@ -1,7 +1,7 @@
 package com.example.security_token.security.filter;
 
-import com.example.security_token.security.jwt.JwtTokenProvider;
 import com.example.security_token.domain.service.UserService;
+import com.example.security_token.security.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwt = getJwtFromRequest(request);
-            logger.info("Filter jwt: " +jwt);
+            logger.info("Filter jwt: " + jwt);
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 

@@ -75,9 +75,9 @@ public class RoleService {
     public Page<Role> getAllRoles(Pageable pageable) {
         return repository.findAll(pageable);
     }
-    
+
     @Transactional
-    public Role updateRolePermissions(String  roleName, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
+    public Role updateRolePermissions(String roleName, Set<String> permissionsToAdd, Set<String> permissionsToRemove) {
         Role role = repository.findByName(roleName)
                 .orElseThrow(() -> new EntityNotFoundException("Role not found with name: " + roleName));
 
@@ -121,7 +121,7 @@ public class RoleService {
         return foundRoles;
 
     }
-    
+
     // ----------------------  PRIVATE  -------------------------------
 
     private Set<Permission> processPermissions(Set<PermissionResponse> permissionResponses) {
@@ -155,6 +155,6 @@ public class RoleService {
         response.setName(permission.getName());
         return response;
     }
-    
+
 
 }

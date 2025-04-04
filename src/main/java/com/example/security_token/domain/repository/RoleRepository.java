@@ -1,6 +1,5 @@
 package com.example.security_token.domain.repository;
 
-import com.example.security_token.domain.model.Permission;
 import com.example.security_token.domain.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 

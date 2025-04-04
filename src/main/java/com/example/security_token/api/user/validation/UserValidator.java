@@ -48,7 +48,7 @@ public class UserValidator {
         if (request.getPermissionsToAdd() == null && request.getPermissionsToRemove() == null) {
             throw new IllegalArgumentException("Nothing to ADD or REMOVE; check data");
         }
-        
+
         if (request.getPermissionsToAdd() != null) {
             request.getPermissionsToAdd().forEach(name -> {
                 if (name == null || name.trim().isEmpty()) {
@@ -68,7 +68,7 @@ public class UserValidator {
 
 
     public static void validateRolesNames(UpdateUserRolesRequest request) {
-        
+
         if (request.getRolesToAdd() != null) {
             request.getRolesToAdd().forEach(name -> {
                 if (name == null || name.trim().isEmpty()) {

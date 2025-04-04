@@ -12,8 +12,8 @@ public class UserPermissionResponse {
     private String username;
 
     private String email;
-            
+
     private Set<String> permissions;
-    
+
     private Set<String> roles;
 }

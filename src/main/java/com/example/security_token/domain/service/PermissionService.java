@@ -23,6 +23,7 @@ public class PermissionService {
 
     /**
      * Crea un nuevo permiso si no existe ya uno con el mismo nombre
+     *
      * @param name Nombre del permiso a crear
      * @throws PermissionException Si ya existe un permiso con ese nombre
      */
@@ -45,6 +46,7 @@ public class PermissionService {
 
     /**
      * Busca un permiso por su nombre
+     *
      * @param name Nombre del permiso a buscar
      * @return Optional con el permiso si existe
      */
@@ -80,6 +82,6 @@ public class PermissionService {
 
         return foundPermissions;
     }
-    
+
 
 }

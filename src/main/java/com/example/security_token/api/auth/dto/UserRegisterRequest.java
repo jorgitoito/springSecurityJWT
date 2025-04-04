@@ -16,7 +16,7 @@ public class UserRegisterRequest {
     @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
-    
+
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "Debe ser un email válido")
     private String email;
