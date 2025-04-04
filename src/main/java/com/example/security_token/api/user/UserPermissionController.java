@@ -178,7 +178,7 @@ public class UserPermissionController {
             @Parameter(description = "Permissions to add and remove")
             @Valid @RequestBody UpdateRolePermissionsRequest request) {
 
-        UserValidator.validateRequestRolesToUpdate(request);
+        UserValidator.validateRequestPermissionsToUpdate(request);
 
         Role updatedRole = roleService.updateRolePermissions(
                 roleName,
@@ -214,7 +214,7 @@ public class UserPermissionController {
             @Parameter(description = "Permissions to add and remove")
             @Valid @RequestBody UpdateUserRolesRequest request) {
 
-        UserValidator.validateRolesNames(request);
+        UserValidator.validateRequestRolesToUpdate(request);
 
         UserEntity updatedUser = userService.updateUserRoles(
                 email,

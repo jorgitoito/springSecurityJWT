@@ -11,7 +11,7 @@ public class UserValidator {
         throw new IllegalStateException("Utility class");
     }
 
-    public static void validateRequestRolesToUpdate(UpdateRolePermissionsRequest request) {
+    public static void validateRequestPermissionsToUpdate(UpdateRolePermissionsRequest request) {
         // Validación básica del request
         if (request == null) {
             throw new IllegalArgumentException("Request body cannot be null");
@@ -27,8 +27,28 @@ public class UserValidator {
         validatePermissionNames(request);
     }
 
+    public static void validateRequestRolesToUpdate(UpdateUserRolesRequest request) {
+        // Validación básica del request
+        if (request == null) {
+            throw new IllegalArgumentException("Request body cannot be null");
+        }
+
+        // Validar que al menos una operación fue solicitada
+        if ((request.getRolesToAdd() == null || request.getRolesToAdd().isEmpty()) &&
+                (request.getRolesToRemove() == null || request.getRolesToRemove().isEmpty())) {
+            throw new IllegalArgumentException("Must specify roles to add or remove");
+        }
+
+        // Validar nombres de roles
+        validateRolesNames(request);
+    }
+
 
     public static void validatePermissionNames(UpdateRolePermissionsRequest request) {
+        if (request.getPermissionsToAdd() == null && request.getPermissionsToRemove() == null) {
+            throw new IllegalArgumentException("Nothing to ADD or REMOVE; check data");
+        }
+        
         if (request.getPermissionsToAdd() != null) {
             request.getPermissionsToAdd().forEach(name -> {
                 if (name == null || name.trim().isEmpty()) {
@@ -48,6 +68,7 @@ public class UserValidator {
 
 
     public static void validateRolesNames(UpdateUserRolesRequest request) {
+        
         if (request.getRolesToAdd() != null) {
             request.getRolesToAdd().forEach(name -> {
                 if (name == null || name.trim().isEmpty()) {
