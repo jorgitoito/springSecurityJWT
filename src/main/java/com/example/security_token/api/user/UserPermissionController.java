@@ -5,7 +5,10 @@ import com.example.security_token.api.user.dto.PermissionResponse;
 import com.example.security_token.api.user.dto.RoleRequest;
 import com.example.security_token.api.user.dto.RoleResponse;
 import com.example.security_token.api.user.dto.UpdateRolePermissionsRequest;
+import com.example.security_token.api.user.dto.UpdateUserRolesRequest;
 import com.example.security_token.api.user.dto.UserPermissionResponse;
+import com.example.security_token.api.user.mapper.UserPermissionMapper;
+import com.example.security_token.api.user.validation.UserValidator;
 import com.example.security_token.domain.model.Permission;
 import com.example.security_token.domain.model.Role;
 import com.example.security_token.domain.model.UserEntity;
@@ -37,7 +40,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static com.example.security_token.api.user.mapper.UserPermissionMapper.toUserPermissionResponse;
 
 @RequiredArgsConstructor  // Genera constructor con parámetros finales para inyección
 @RestController
@@ -47,8 +51,9 @@ public class UserPermissionController {
     private final UserService userService;
 
     private final PermissionService permissionService;
-    
+
     private final RoleService roleService;
+
 
     @Operation(summary = "Get Roles and Permissions by User email", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{email}")
@@ -58,7 +63,7 @@ public class UserPermissionController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        this.toUserPermissionResponse(userService.getUserByEmail(email))
+                        UserPermissionMapper.toUserPermissionResponse(userService.getUserByEmail(email))
                 );
     }
 
@@ -101,7 +106,7 @@ public class UserPermissionController {
         Page<Permission> permissionsPage = permissionService.getAllPermissions(pageable);
 
         // Convertir Page<Permission> a Page<PermissionResponse>
-        Page<PermissionResponse> responsePage = permissionsPage.map(this::toPermissionResponse);
+        Page<PermissionResponse> responsePage = permissionsPage.map(UserPermissionMapper::toPermissionResponse);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -144,7 +149,7 @@ public class UserPermissionController {
         Page<Role> rolesPage = roleService.getAllRoles(pageable);
 
         // Convertir Page<Permission> a Page<PermissionResponse>
-        Page<RoleResponse> responsePage = rolesPage.map(this::toRolesResponse);
+        Page<RoleResponse> responsePage = rolesPage.map(UserPermissionMapper::toRolesResponse);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -162,7 +167,7 @@ public class UserPermissionController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized access",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "403", description = "Forbidden access",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))                    
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             })
     @PutMapping("/roles/{roleName}/permissions")
     @PreAuthorize("hasAuthority('ROLES_WRITE') or hasRole('ADMIN')")
@@ -173,7 +178,7 @@ public class UserPermissionController {
             @Parameter(description = "Permissions to add and remove")
             @Valid @RequestBody UpdateRolePermissionsRequest request) {
 
-        this.validateRequestRolesToUpdate(request);
+        UserValidator.validateRequestRolesToUpdate(request);
 
         Role updatedRole = roleService.updateRolePermissions(
                 roleName,
@@ -181,94 +186,45 @@ public class UserPermissionController {
                 request.getPermissionsToRemove() != null ? request.getPermissionsToRemove() : Set.of()
         );
 
-        return ResponseEntity.ok(toRolesResponse(updatedRole));
-    }
-
-    private void validateRequestRolesToUpdate(UpdateRolePermissionsRequest request) {
-        // Validación básica del request
-        if (request == null) {
-            throw new IllegalArgumentException("Request body cannot be null");
-        }
-
-        // Validar que al menos una operación fue solicitada
-        if ((request.getPermissionsToAdd() == null || request.getPermissionsToAdd().isEmpty()) &&
-                (request.getPermissionsToRemove() == null || request.getPermissionsToRemove().isEmpty())) {
-            throw new IllegalArgumentException("Must specify permissions to add or remove");
-        }
-
-        // Validar nombres de permisos
-        validatePermissionNames(request);
-    }
-
-    private RoleResponse toRolesResponse(Role role) {
-        if (role == null) {
-            return null;
-        }
-
-        RoleResponse response = new RoleResponse();
-        response.setId(role.getId());
-        response.setName(role.getName());
-
-        if (role.getPermissions() != null) {
-            Set<PermissionResponse> permissionResponses = role.getPermissions().stream()
-                    .map(this::toPermissionResponse)
-                    .collect(Collectors.toSet());
-            response.setPermissions(permissionResponses);
-        }
-
-        return response;
+        return ResponseEntity.ok(UserPermissionMapper.toRolesResponse(updatedRole));
     }
 
 
-    private UserPermissionResponse toUserPermissionResponse(UserEntity userEntity) {
-        UserPermissionResponse user = new UserPermissionResponse();
+    @Operation(summary = "Update User. Assign and remove Roles to User",
+            description = "Add or remove roles to User by user email",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Role updated successfully",
+                            content = @Content(schema = @Schema(implementation = RoleResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Role or permission not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized access",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden access",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            })
+    @PutMapping("/{email}")
+    @PreAuthorize("hasAuthority('ROLES_WRITE') or hasRole('ADMIN')")
+    public ResponseEntity<UserPermissionResponse> updateUserRoles(
+            @Parameter(description = "User email", required = true)
+            @PathVariable String email,
 
-        user.setEmail(userEntity.getEmail());
-        user.setUsername(userEntity.getUsername());
+            @Parameter(description = "Permissions to add and remove")
+            @Valid @RequestBody UpdateUserRolesRequest request) {
 
-        // Extraer los nombres de los permisos de las autoridades
-        Set<String> permissions = userEntity.getAuthorities().stream()
-                .map(authority -> authority.getAuthority())
-                .filter(auth -> !auth.startsWith("ROLE_"))
-                .collect(Collectors.toSet());
-        user.setPermissions(permissions);
+        UserValidator.validateRolesNames(request);
 
-        // Extraer los nombres de los roles
-        Set<String> roles = userEntity.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-        user.setRoles(roles);
+        UserEntity updatedUser = userService.updateUserRoles(
+                email,
+                request.getRolesToAdd() != null ? request.getRolesToAdd() : Set.of(),
+                request.getRolesToRemove() != null ? request.getRolesToRemove() : Set.of()
+        );
 
-        return user;
+        return ResponseEntity.ok(toUserPermissionResponse(updatedUser));
+
     }
-    
-    private PermissionResponse toPermissionResponse(Permission permission){
-        if (permission == null) {
-            return null;
-        }
-        PermissionResponse permissionResponse = new PermissionResponse();
-        permissionResponse.setName(permission.getName());
-        return permissionResponse;
-    }
 
-    private void validatePermissionNames(UpdateRolePermissionsRequest request) {
-        if (request.getPermissionsToAdd() != null) {
-            request.getPermissionsToAdd().forEach(name -> {
-                if (name == null || name.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Permission name cannot be null or empty");
-                }
-            });
-        }
-
-        if (request.getPermissionsToRemove() != null) {
-            request.getPermissionsToRemove().forEach(name -> {
-                if (name == null || name.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Permission name cannot be null or empty");
-                }
-            });
-        }
-    }
-    
-    
 
 }

@@ -94,6 +94,33 @@ public class RoleService {
 
         return repository.save(role);
     }
+
+    // Método para buscar permisos por nombres
+    @Transactional(readOnly = true)
+    public Set<Role> findRolesByNameIn(Set<String> rolesNames) {
+
+        if (rolesNames == null || rolesNames.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<Role> foundRoles = repository.findByNameIn(rolesNames);
+
+        // Verificar que todos los roles solicitados existen
+        if (foundRoles.size() != rolesNames.size()) {
+            Set<String> foundNames = foundRoles.stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toSet());
+
+            Set<String> missing = rolesNames.stream()
+                    .filter(name -> !foundNames.contains(name))
+                    .collect(Collectors.toSet());
+
+            throw new EntityNotFoundException("Roles not found: " + missing);
+        }
+
+        return foundRoles;
+
+    }
     
     // ----------------------  PRIVATE  -------------------------------
 
@@ -128,6 +155,6 @@ public class RoleService {
         response.setName(permission.getName());
         return response;
     }
-
+    
 
 }

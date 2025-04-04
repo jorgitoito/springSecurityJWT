@@ -1,22 +1,31 @@
 package com.example.security_token.domain.service;
 
+import com.example.security_token.domain.model.Permission;
+import com.example.security_token.domain.model.Role;
 import com.example.security_token.domain.model.UserEntity;
 import com.example.security_token.domain.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    private final RoleService roleService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleService roleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
     }
 
     @Override
@@ -51,4 +60,26 @@ public class UserService implements UserDetailsService {
     public boolean existsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
+    @Transactional
+    public UserEntity updateUserRoles(String email, Set<String> rolesToAdd, Set<String> rolesToRemove) {
+
+        UserEntity user = this.getUserByEmail(email);
+        
+        // Añadir nuevos roles
+        if (rolesToAdd != null && !rolesToAdd.isEmpty()) {
+            
+            Set<Role> addRoles = roleService.findRolesByNameIn(rolesToAdd);
+            user.getRoles().addAll(addRoles);
+        }
+
+        // Eliminar roles
+        if (rolesToRemove != null && !rolesToRemove.isEmpty()) {
+            user.getRoles().removeIf(p -> rolesToRemove.contains(p.getName()));
+        }
+        return userRepository.save(user);
+        
+    }
+    
+
 }
