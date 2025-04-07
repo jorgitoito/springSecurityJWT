@@ -19,7 +19,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -57,7 +56,9 @@ public class JwtTokenProvider {
 
         List<String> authorities = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                // The Stream.toList() method returns an unmodifiable list, while Collectors.toList() typically returns a modifiable ArrayList
+                //.collect(Collectors.toList());
+                .toList();
 
         log.warn("authorities" + authorities);
 

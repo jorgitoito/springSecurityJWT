@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Swagger UI:
@@ -79,7 +78,9 @@ public class AuthController {
             // Obtener los roles del usuario
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
+                    // The Stream.toList() method returns an unmodifiable list, while Collectors.toList() typically returns a modifiable ArrayList
+                    //.collect(Collectors.toList());
+                    .toList();
 
             // Devolver la respuesta con el token JWT y los roles del usuario
             JwtResponse response = new JwtResponse(jwt, userDetails.getUsername(), roles);
