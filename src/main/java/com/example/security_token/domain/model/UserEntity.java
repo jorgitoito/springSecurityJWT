@@ -13,8 +13,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,8 +29,10 @@ import java.util.stream.Stream;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@ToString(exclude = "roles") // Excluye relaciones para evitar loops
 public class UserEntity extends Auditable implements UserDetails {
 
     @Id
@@ -95,5 +99,24 @@ public class UserEntity extends Auditable implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    // don't use @Data. so do implementation of equals/hashCode
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserEntity)) return false;
+        UserEntity that = (UserEntity) o;
+        return id != null && id.equals(that.id); // Solo compara IDs
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode(); // Fijo para JPA
+    }
+
+    public boolean isSameUser(UserEntity other) {
+        if (this == other) return true;
+        return this.email != null && this.email.equals(other.getEmail());
     }
 }
