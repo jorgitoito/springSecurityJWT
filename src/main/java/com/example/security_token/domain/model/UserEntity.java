@@ -1,5 +1,6 @@
 package com.example.security_token.domain.model;
 
+import com.example.security_token.config.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-public class UserEntity implements UserDetails {
+public class UserEntity extends Auditable implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
