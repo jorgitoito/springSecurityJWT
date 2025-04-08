@@ -2,6 +2,7 @@ package com.example.security_token;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * APP: Demo for testing Spring security.
@@ -15,6 +16,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * -p 5432:5432 -d postgres:latest
  */
 @SpringBootApplication
+@EnableFeignClients
 public class SecurityTokenApplication {
 
     public static void main(String[] args) {

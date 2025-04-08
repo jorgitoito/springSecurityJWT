@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: security-token
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/securityDemo
+    username: postgres
+    password: ${DDBB_PASS:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      test-while-idle: true
+      validation-query: SELECT 1
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+        hibernate.format_sql: true
+    open-in-view: false
+
+app:
+  jwtSecret: ${JWT_SECRET:defaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProduction}
+  jwtExpirationInMs: 86400000
+
+auth:
+  max-attempts: 5
+  lock-time: 900000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+
+server:
+  port: 8080
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 20
+
+    
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000    # 5s para conexión genérica
+        readTimeout: 5000       # 5s para lectura genérica
+        loggerLevel: basic
+      aemet-client:             # Nombre debe coincidir con @FeignClient
+        connectTimeout: 10000   # 10s para conexión (AEMET suele ser lento)
+        readTimeout: 30000      # 30s para lectura (respuestas grandes)
+        loggerLevel: full       # Debug en desarrollo (cambiar a 'basic' en prod)
+
+aemet:
+  api:
+    key: ${AEMET_API_KEY:}      # Obligatorio desde variables de entorno
+  base-url-dominio: https://opendata.aemet.es
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
