@@ -27,6 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -87,10 +90,11 @@ public class UserPermissionController {
             })
     @GetMapping("/permissions")
     @PreAuthorize("hasAuthority('PERMISSION_READ') or hasRole('ADMIN')")
-    public ResponseEntity<Page<PermissionResponse>> getAllPermissions(
+    public ResponseEntity<PagedModel<EntityModel<PermissionResponse>>> getAllPermissions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name,asc") String sort) {
+            @RequestParam(defaultValue = "name,asc") String sort,
+            PagedResourcesAssembler<PermissionResponse> assembler) {
 
         // Procesar el parámetro de ordenamiento
         String[] sortParams = sort.split(",");
@@ -108,7 +112,10 @@ public class UserPermissionController {
         // Convertir Page<Permission> a Page<PermissionResponse>
         Page<PermissionResponse> responsePage = permissionsPage.map(UserPermissionMapper::toPermissionResponse);
 
-        return ResponseEntity.ok(responsePage);
+        // Convertir a PagedModel utilizando el ensamblador
+        PagedModel<EntityModel<PermissionResponse>> pagedModel = assembler.toModel(responsePage);
+
+        return ResponseEntity.ok(pagedModel);
     }
 
     @Operation(summary = "Create Role", security = @SecurityRequirement(name = "bearerAuth"))
@@ -130,10 +137,11 @@ public class UserPermissionController {
             })
     @GetMapping("/roles")
     @PreAuthorize("hasAuthority('ROLE_READ') or hasRole('ADMIN')")
-    public ResponseEntity<Page<RoleResponse>> getAllRoles(
+    public ResponseEntity<PagedModel<EntityModel<RoleResponse>>> getAllRoles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name,asc") String sort) {
+            @RequestParam(defaultValue = "name,asc") String sort,
+            PagedResourcesAssembler<RoleResponse> assembler) {
 
         // Procesar el parámetro de ordenamiento
         String[] sortParams = sort.split(",");
@@ -151,7 +159,10 @@ public class UserPermissionController {
         // Convertir Page<Permission> a Page<PermissionResponse>
         Page<RoleResponse> responsePage = rolesPage.map(UserPermissionMapper::toRolesResponse);
 
-        return ResponseEntity.ok(responsePage);
+        // Convertir a PagedModel utilizando el ensamblador
+        PagedModel<EntityModel<RoleResponse>> pagedModel = assembler.toModel(responsePage);
+
+        return ResponseEntity.ok(pagedModel);
     }
 
     @Operation(summary = "Update Role Permissions",
