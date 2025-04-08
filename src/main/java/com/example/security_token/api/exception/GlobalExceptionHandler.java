@@ -2,6 +2,8 @@ package com.example.security_token.api.exception;
 
 import com.example.security_token.api.product.exception.ProductException;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +26,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
 
     // Manejo de excepciones de validación (para @Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,89 +45,39 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    // Manejo de excepciones de autenticación
+    // Manejador de excepciones de autenticación
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                "Error de autenticación",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Error de autenticación", ex.getMessage(), request);
     }
 
-    // Manejo de excepciones de autorización
+    // Manejador de excepciones de acceso denegado
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
-            AccessDeniedException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Acceso denegado",
-                "No tienes los permisos necesarios para acceder a este recurso",
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Acceso denegado", "No tienes permisos para acceder a este recurso", request);
     }
 
-    // Manejo de excepciones de autorización
+    // Manejador de credenciales incorrectas
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
-            BadCredentialsException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Acceso denegado",
-                "Bad Credentials. Revise el TOKEN enviado",
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas", "Revisa el TOKEN enviado", request);
     }
 
-    // Manejo de excepciones de autorización
+    // Manejador de cuentas deshabilitadas
     @ExceptionHandler(DisabledException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleDisabledException(
-            DisabledException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Acceso denegado",
-                "Cuenta deshabilitada",
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ErrorResponse> handleDisabledException(DisabledException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Cuenta deshabilitada", "Tu cuenta está deshabilitada", request);
     }
 
-    // Manejo de excepciones de autorización
+    // Manejador de cuentas bloqueadas
     @ExceptionHandler(LockedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleLockedException(
-            LockedException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Acceso denegado",
-                "Cuenta bloqueada",
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ErrorResponse> handleLockedException(LockedException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Cuenta bloqueada", "Tu cuenta está bloqueada", request);
     }
 
     @ExceptionHandler(TooManyFailedLoginAttemptsException.class)
@@ -146,71 +100,44 @@ public class GlobalExceptionHandler {
     }
 
 
-    // Manejo de excepciones de entidad no encontrada
+    // Manejador de entidad no encontrada
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
-            EntityNotFoundException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Recurso no encontrado",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage(), request);
     }
 
-    // Manejo de excepciones de Recurso no encontrado
+    // Manejador de nombre de usuario no encontrado
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(
-            UsernameNotFoundException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Recurso no encontrado:",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Username no encontrado", ex.getMessage(), request);
     }
 
-    // También puedes crear excepciones personalizadas
+    // Manejo de excepciones personalizadas
     @ExceptionHandler(ProductException.class)
-    public ResponseEntity<ErrorResponse> handleProductException(
-            ProductException ex, WebRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                ex.getStatus().value(),
-                ex.getStatus().getReasonPhrase(),
-                ex.getMessage(),
-                request.getDescription(false)
-        );
-
-        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    public ResponseEntity<ErrorResponse> handleProductException(ProductException ex, WebRequest request) {
+        return buildErrorResponse(ex.getStatus(), ex.getStatus().getReasonPhrase(), ex.getMessage(), request);
     }
 
-    // Manejador de excepciones genérico
+    // Manejador genérico para excepciones no controladas
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleGlobalException(
-            Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", ex.getMessage(), request);
+    }
 
+    // Método común para construir la respuesta de error
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String title, String message, WebRequest request) {
+        logger.error("Error: {} - {}", title, message);  // Log para depuración
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Error interno del servidor",
-                ex.getMessage(),
+                status.value(),
+                title,
+                message,
                 request.getDescription(false)
         );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
 }

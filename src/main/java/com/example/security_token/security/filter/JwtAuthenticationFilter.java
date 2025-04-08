@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -30,10 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        try {
-            String jwt = getJwtFromRequest(request);
-            //logger.info("Filter jwt: " + jwt); Activate for debug in dev only
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+
+        String jwt = getJwtFromRequest(request);
+        //log.info("Filter jwt: " + jwt); Activate for debug in dev only
+        if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+            try {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 
                 UserDetails userDetails = userService.loadUserByUsername(username);
@@ -43,9 +46,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("User authenticated successfully: {}", username);
+            } catch (Exception ex) {
+                logger.error("Error while authenticating user from JWT", ex);
             }
-        } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);
