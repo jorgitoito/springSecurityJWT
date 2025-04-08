@@ -1,11 +1,9 @@
 package com.example.security_token.domain.service;
 
 
-import com.example.security_token.api.exception.ErrorResponse;
 import feign.FeignException;
 
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
 
 /**
  * Excepción personalizada para errores en el servicio AEMET
@@ -68,5 +66,5 @@ public class AemetServiceException extends RuntimeException {
     public String getDetalleTecnico() {
         return detalleTecnico;
     }
-    
+
 }
