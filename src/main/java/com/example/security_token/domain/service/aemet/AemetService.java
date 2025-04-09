@@ -1,5 +1,6 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.domain.service.aemet;
 
+import com.example.security_token.api.aemet.exception.AemetServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

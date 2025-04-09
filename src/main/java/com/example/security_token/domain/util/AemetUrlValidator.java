@@ -1,4 +1,4 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.domain.util;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

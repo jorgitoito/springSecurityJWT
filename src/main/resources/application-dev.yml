@@ -25,8 +25,8 @@ spring:
     open-in-view: false
 
 app:
-  jwtSecret: ${JWT_SECRET:defaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProduction}
-  jwtExpirationInMs: 86400000
+  jwtSecret: ${JWT_SECRET:defaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProduction}  
+  jwtExpirationInMs: 3600000 # 1 hora
 
 auth:
   max-attempts: 5

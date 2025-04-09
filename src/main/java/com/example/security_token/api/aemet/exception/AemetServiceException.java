@@ -1,4 +1,4 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.api.aemet.exception;
 
 
 import feign.FeignException;

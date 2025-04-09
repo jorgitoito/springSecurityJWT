@@ -1,4 +1,4 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.domain.service.aemet;
 
 import com.example.security_token.config.aemet.AemetAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;

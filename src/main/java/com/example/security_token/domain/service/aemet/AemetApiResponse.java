@@ -1,4 +1,4 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.domain.service.aemet;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

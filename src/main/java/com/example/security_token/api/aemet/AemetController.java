@@ -1,7 +1,7 @@
 package com.example.security_token.api.aemet;
 
 
-import com.example.security_token.domain.service.AemetService;
+import com.example.security_token.domain.service.aemet.AemetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

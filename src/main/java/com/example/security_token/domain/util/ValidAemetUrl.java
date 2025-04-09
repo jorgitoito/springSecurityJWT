@@ -1,5 +1,6 @@
-package com.example.security_token.domain.service;
+package com.example.security_token.domain.util;
 
+import com.example.security_token.domain.util.AemetUrlValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
