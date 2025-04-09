@@ -21,32 +21,14 @@ public interface AEMETFeignClient {
     ResponseEntity<AemetApiResponse> getPrediccionUV(
             @PathVariable("dia") String dia);
 
+    // Primera llamada (devuelve la URL de datos)
+    @GetMapping("/opendata/api/prediccion/especifica/playa/{codPlaya}")
+    ResponseEntity<AemetApiResponse> getPrediccionPlaya(
+            @PathVariable("codPlaya") String codPlaya);
+    
+
     // Segunda llamada (para seguir la URL de datos)
     @GetMapping
     ResponseEntity<String> followDataUrl(@SpringQueryMap URI fullUrl);
 }
-
-/*    
-   https://opendata.aemet.es/opendata/sh/36a59e59
-
-
-// Ejemplo: Obtener predicción diaria por municipio (usando código INE)
-    @GetMapping("/prediccion/especifica/municipio/diaria/{codigoMunicipio}")
-    ResponseEntity<String> getPrediccionDiariaMunicipio(
-            @PathVariable("codigoMunicipio") String codigoMunicipio,
-            @RequestHeader("api_key") String apiKey);
-
-    // Ejemplo: Obtener datos de observación (valores actuales)
-    @GetMapping("/observacion/convencional/datos/estacion/{idEstacion}")
-    ResponseEntity<String> getDatosObservacion(
-            @PathVariable("idEstacion") String idEstacion,
-            @RequestHeader("api_key") String apiKey);
-
-    // Ejemplo: Obtener metadatos de estaciones
-    @GetMapping("/valores/climatologicos/inventarioestaciones/todasestaciones")
-    ResponseEntity<String> getMetadatosEstaciones(
-            @RequestHeader("api_key") String apiKey);
-    
-
-*/
 

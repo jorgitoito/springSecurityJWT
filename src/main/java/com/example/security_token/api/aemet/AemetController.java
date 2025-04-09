@@ -3,9 +3,11 @@ package com.example.security_token.api.aemet;
 
 import com.example.security_token.domain.service.aemet.AemetService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +33,13 @@ public class AemetController {
             log.error(String.valueOf(e));
             throw e;
         }
+    }
+
+    @Operation(summary = "get Playa AEMET data")
+    @GetMapping("/playa/{codPlaya}")
+    public ResponseEntity<String> getPlayaData(@PathVariable @NotNull String codPlaya) {
+        log.info("Recibida solicitud para obtener datos de playa con código: {}", codPlaya);
+        return ResponseEntity.ok(aemetService.getPredictionPlaya(codPlaya));
     }
 
 }
