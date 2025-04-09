@@ -2,6 +2,7 @@ Security Token DEMO
 ===================================
 
 Proyecto Demo con Spring Boot 3.4.4, java 21 y Spring security y JWS (Json Web Token).
+- Autenticacion y Autorizacion.
 
 Se han añadido otras caracteristicas:
 - Controller de java para API REST. Con swagger-ui
