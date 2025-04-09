@@ -71,7 +71,7 @@ aemet:
 logging:
   level:
     root: INFO
-    com.example: DEBUG
+    com.example: INFO
     org.springframework.security: INFO
     org.springframework.web: INFO
   pattern:
