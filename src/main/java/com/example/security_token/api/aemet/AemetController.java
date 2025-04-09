@@ -25,14 +25,8 @@ public class AemetController {
     @Operation(summary = "get All UV AEMET data")
     @GetMapping("/UV")
     public ResponseEntity<String> getAllUVData() {
-        try {
-            // Tu lógica
-            return ResponseEntity.ok(aemetService.getUvPredictionData("0"));
-        } catch (Exception e) {
-            // Si quieres manejar la excepción aquí en lugar de en el GlobalExceptionHandler
-            log.error(String.valueOf(e));
-            throw e;
-        }
+        log.info("Recibida solicitud para obtener datos de UV para hoy: 0");
+        return ResponseEntity.ok(aemetService.getUvPredictionData("0"));
     }
 
     @Operation(summary = "get Playa AEMET data")
