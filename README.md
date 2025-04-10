@@ -29,5 +29,7 @@ Docker. Utilizamos una bbdd: Comando:
 docker run --name postgres-security -e POSTGRES_PASSWORD=tu_password_postgres -e POSTGRES_DB=securityDemo
 -p 5432:5432 -d postgres:latest
 
-Paso 1. - Levantar la bbdd con el comando docker de arriba
-Paso 2. - Levantar la app con las variables de entorno descritas.
+Iniciar la app en local:
+------------------------
+- Paso 1. - Levantar la bbdd con el comando docker de arriba
+- Paso 2. - Levantar la app con las variables de entorno descritas.
