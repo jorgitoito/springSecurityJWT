@@ -21,6 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Test para probar los Roles y Permisos.
+ */
 @ActiveProfiles("test")
 @WebMvcTest(UserPermissionController.class)
 @Import(SecurityConfig.class) // Importa tu configuración de seguridad

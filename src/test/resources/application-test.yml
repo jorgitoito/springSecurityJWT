@@ -11,5 +11,16 @@ spring:
   security:
     enabled: false # Desactivar seguridad si es necesario en las pruebas
 
+  
 aemet:
-  base-url-dominio: https://opendata.aemet.es # O puedes configurar un mock para este URL
+  api:
+    key: ${AEMET_API_KEY:key}      # Obligatorio desde variables de entorno
+  base-url-dominio: https://opendata.aemet.es
+  
+auth:
+  max-attempts: 5
+  lock-time: 900000
+  
+app:
+  jwtSecret: ${JWT_SECRET:defaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProductiondefaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProduction}
+  jwtExpirationInMs: 3600000 # 1 hora
