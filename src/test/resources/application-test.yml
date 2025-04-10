@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb # Usar una base de datos en memoria para las pruebas
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # Reemplaza la base de datos en cada prueba
+    show-sql: true
+  security:
+    enabled: false # Desactivar seguridad si es necesario en las pruebas
+
+aemet:
+  base-url-dominio: https://opendata.aemet.es # O puedes configurar un mock para este URL
