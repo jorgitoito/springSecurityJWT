@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb # Usar una base de datos en memoria para las pruebas
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # Reemplaza la base de datos en cada prueba
+    show-sql: true
+  security:
+    enabled: false # Desactivar seguridad si es necesario en las pruebas
+
+  
+aemet:
+  api:
+    key: ${AEMET_API_KEY:key}      # Obligatorio desde variables de entorno
+  base-url-dominio: https://opendata.aemet.es
+  
+auth:
+  max-attempts: 5
+  lock-time: 900000
+  
+app:
+  jwtSecret: ${JWT_SECRET:defaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProductiondefaultSecretKeyForDevelopmentEnvironmentOnlyDontUseInProduction}
+  jwtExpirationInMs: 3600000 # 1 hora
