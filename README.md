@@ -8,12 +8,15 @@ Se han añadido otras caracteristicas:
 - Controller de java para API REST. Con swagger-ui
 - Cliente Feign para conectarse a API publica. AEMET.
 - JPA para la Base de Datos.
+- Auditable para UserEntity.
+- Seguridad Custom para Controller "/signin" con LoginAttemptService.
+- Test Unitarios e Integracion.
 
 
 Prerequisitos:
 - Docker. Utilizamos una bbdd.
 - Postman/Swaguer-ui para probar API.
-- Cliente de postgres (para poder ejecutar SQLs de creación de tablas)
+- Cliente de Postgres (para poder ejecutar SQLs de creación de tablas)
 
 La aplicacion para entorno DEV, necesita variables de entorno:
 - AEMET_API_KEY = = tu_apikey_pedida_a_aemet_gratis
