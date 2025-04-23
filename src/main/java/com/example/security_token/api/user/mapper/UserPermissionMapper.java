@@ -10,6 +10,12 @@ import com.example.security_token.domain.model.UserEntity;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Mapear objetos de un tipo en otro.
+ * 
+ * No son objetos complejos, mapear a mano.
+ * Para objetos complejos pasar a usar @Mapper MapStruct, que hace lo mismo pero ahorra escribir el codigo....
+ */
 public class UserPermissionMapper {
 
     private UserPermissionMapper() {
@@ -37,6 +43,9 @@ public class UserPermissionMapper {
 
 
     public static UserPermissionResponse toUserPermissionResponse(UserEntity userEntity) {
+        if (userEntity == null) {
+            return null;
+        }
         UserPermissionResponse user = new UserPermissionResponse();
 
         user.setEmail(userEntity.getEmail());
