@@ -1,6 +1,7 @@
 package com.example.security_token.domain.service.aemet;
 
 import com.example.security_token.config.aemet.AemetAuthConfig;
+import com.example.security_token.config.aemet.AemetRetryConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,7 @@ import java.net.URI;
 @FeignClient(
         name = "aemet-client",      // Debe coincidir con la configuración
         url = "${aemet.base-url-dominio}",
-        configuration = AemetAuthConfig.class
+        configuration = {AemetAuthConfig.class, AemetRetryConfig.class}
 )
 public interface AEMETFeignClient {
 

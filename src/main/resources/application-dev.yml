@@ -1,4 +1,4 @@
-spring:
+spring:  
   application:
     name: security-token
 
@@ -42,7 +42,7 @@ management:
       show-details: when_authorized
   info:
     env:
-      enabled: true
+      enabled: true 
 
 server:
   port: 8080
@@ -50,18 +50,30 @@ server:
     max-threads: 200
     min-spare-threads: 20
 
-    
 feign:
   client:
     config:
       default:
-        connectTimeout: 5000    # 5s para conexión genérica
-        readTimeout: 5000       # 5s para lectura genérica
-        loggerLevel: basic
-      aemet-client:             # Nombre debe coincidir con @FeignClient
-        connectTimeout: 10000   # 10s para conexión (AEMET suele ser lento)
-        readTimeout: 30000      # 30s para lectura (respuestas grandes)
-        loggerLevel: full       # Debug en desarrollo (cambiar a 'basic' en prod)
+        connectTimeout: 5000    # Timeout genérico de 5s
+        readTimeout: 5000      # Timeout genérico de lectura
+        loggerLevel: basic      # Log básico (para pro)
+      aemet-client:            # Config específica para tu cliente AEMET
+        connectTimeout: 10000   # 10s para conexión con AEMET 
+        readTimeout: 30000      # 30s para lectura de respuestas grandes
+        loggerLevel: full       # Log detallado (solo desarrollo)
+        retryer:
+          period: 1000          # Coincide con initialInterval
+          maxPeriod: 5000       # Coincide con maxPeriod
+          maxAttempts: 3        # Coincide con maxAttempts
+        retryableExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - feign.RetryableException
+ 
+
+  # Deshabilitamos Spring Retry para usar solo el retry de Feign
+  retry:
+    enabled: false
 
 aemet:
   api:
