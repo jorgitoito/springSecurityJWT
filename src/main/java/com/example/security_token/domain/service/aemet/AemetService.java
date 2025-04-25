@@ -29,7 +29,7 @@ public class AemetService {
 
     /**
      * Prediccion UV
-     * 
+     *
      * @param date 0 es hoy, 1 mañana, ... hasta 4
      * @return prediccion UV
      */
@@ -48,7 +48,7 @@ public class AemetService {
      * 0301408
      * 0301410
      * 0301808
-     * 
+     *
      * @param codPlaya codigo playa
      * @return prediccion playa
      */
@@ -64,10 +64,10 @@ public class AemetService {
      * Dos pasos:
      * 1. Devuelve datos con la url donde estan los datos
      * 2. Seguir esa url y recuperar los datos.
-     * 
-     * @param param parametro de consultas con un solo parametro
+     *
+     * @param param        parametro de consultas con un solo parametro
      * @param tipoConsulta tipo consultas
-     * @param apiCall la llamada a realizar
+     * @param apiCall      la llamada a realizar
      * @return datos de aemet
      */
 
@@ -81,11 +81,19 @@ public class AemetService {
 
             // Verificar si la respuesta es nula
             if (response == null) {
+                log.error("No se recibió respuesta del servicio AEMET");
                 throw new AemetServiceException("No se recibió respuesta del servicio AEMET");
             }
+            log.info("response: {}", response);
 
-            // Verificar. Podemos asumir que response.getBody() no será nulo con Feign Client
+            // Verificar si el cuerpo de la respuesta es nulo
             AemetApiResponse responseBody = response.getBody();
+            if (responseBody == null) {
+                log.error("Cuerpo de la respuesta nulo de AEMET");
+                throw new AemetServiceException("Cuerpo de la respuesta nulo de AEMET");
+            }
+
+            // Verificar si la respuesta es exitosa
             if (!responseBody.isSuccess()) {
                 log.error("Respuesta no exitosa de AEMET: {}", responseBody);
                 throw new AemetServiceException("Respuesta no exitosa de AEMET");

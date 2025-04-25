@@ -1,14 +1,17 @@
 package com.example.security_token.config.aemet;
 
+import com.example.security_token.api.aemet.exception.AemetServiceException;
 import feign.Response;
 import feign.RetryableException;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 
 @Configuration
+@Slf4j
 public class AemetRetryConfig {
 
     private static final int INITIAL_INTERVAL = 1000; // 1 segundo
@@ -34,12 +37,19 @@ public class AemetRetryConfig {
             if (shouldRetry(status)) {
                 return createRetryableException(response, status, requestMethod);
             }
+
+            // Log para depuración
+            log.error("Respuesta de AEMET no exitosa. Código de estado: {}. URL: {}. Cuerpo: {}",
+                    status, requestUrl, response.body());
+
             return createAppropriateException(status, requestMethod, requestUrl);
         };
     }
 
     private boolean shouldRetry(int status) {
+        log.error("shouldRetry");
         return status == HttpStatus.TOO_MANY_REQUESTS.value() ||
+                status == HttpStatus.SERVICE_UNAVAILABLE.value() || // Agregar 503
                 status >= HttpStatus.INTERNAL_SERVER_ERROR.value();
     }
 
@@ -87,7 +97,10 @@ public class AemetRetryConfig {
                 getClientErrorDescription(status)
         );
 
-        return new RuntimeException(errorMessage);
+        return switch (status) {
+            case 400, 401, 403, 404 -> new AemetServiceException(errorMessage); // Lanza una excepción más específica
+            default -> new RuntimeException(errorMessage);
+        };
     }
 
     private String getClientErrorDescription(int status) {
