@@ -37,3 +37,7 @@ Iniciar la app en local:
 ------------------------
 - Paso 1. - Levantar la bbdd con el comando docker de arriba
 - Paso 2. - Levantar la app con las variables de entorno descritas.
+- Paso 3. - Darse de alta(usuario/password)
+- Paso 4. - Conseguir JWT con los datos del login.
+- Paso 5. - Llamar a end-point securizados con el JWT.
+- Paso 6. - AEMET y swagger-ui no estan securizados.
