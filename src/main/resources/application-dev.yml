@@ -61,15 +61,6 @@ feign:
         connectTimeout: 10000   # 10s para conexión con AEMET 
         readTimeout: 30000      # 30s para lectura de respuestas grandes
         loggerLevel: full       # Log detallado (solo desarrollo)
-        retryer:
-          period: 1000          # Coincide con initialInterval
-          maxPeriod: 5000       # Coincide con maxPeriod
-          maxAttempts: 3        # Coincide con maxAttempts
-        retryableExceptions:
-          - java.net.ConnectException
-          - java.net.SocketTimeoutException
-          - feign.RetryableException
- 
 
   # Deshabilitamos Spring Retry para usar solo el retry de Feign
   retry:

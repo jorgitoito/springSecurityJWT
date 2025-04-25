@@ -10,6 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.net.URI;
 
+/**
+ * Configuración	    Proveedor	            ¿Para qué sirve?
+ * ----------------------------------------------------------------
+ * application-dev.yml	Declarativa (YAML)	    Timeouts, logging, etc.
+ * AemetRetryConfig	    Java + Spring Context	Retries avanzados + ErrorDecoder
+ * AemetAuthConfig	    Java + Spring Context	Headers comunes y validación de API key
+ */
 @FeignClient(
         name = "aemet-client",      // Debe coincidir con la configuración
         url = "${aemet.base-url-dominio}",
@@ -26,7 +33,7 @@ public interface AEMETFeignClient {
     @GetMapping("/opendata/api/prediccion/especifica/playa/{codPlaya}")
     ResponseEntity<AemetApiResponse> getPrediccionPlaya(
             @PathVariable("codPlaya") String codPlaya);
-    
+
 
     // Segunda llamada (para seguir la URL de datos)
     @GetMapping

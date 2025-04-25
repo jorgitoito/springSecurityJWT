@@ -6,11 +6,12 @@ Proyecto Demo con Spring Boot 3.4.4, java 21 y Spring security y JWS (Json Web T
 
 Se han añadido otras caracteristicas:
 - Controller de java para API REST. Con swagger-ui
-- Cliente Feign para conectarse a API publica. AEMET.
+- Cliente Feign para conectarse a API publica. AEMET. Spring Cloud OpenFeign.
 - JPA para la Base de Datos.
 - Auditable para UserEntity.
 - Seguridad Custom para Controller "/signin" con LoginAttemptService.
 - Test Unitarios e Integracion.
+- Resilencia. Feign Retry para AEMET
 
 
 Prerequisitos:
